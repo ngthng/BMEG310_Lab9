@@ -14,10 +14,20 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Action 2
 
-### Reading the data
+### Including libraries
+
+```{r}
+library(ggplot2)
+library(pheatmap)
+```
+
+
+### Reading and summarizing the data
 
 ```{r}
 data_mutation = read.csv("data_mutation_lab.txt", sep = '\t')
+
+# colnames(data_mutation)
 ```
 
 
