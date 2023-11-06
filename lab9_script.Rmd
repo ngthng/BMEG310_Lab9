@@ -1,0 +1,16 @@
+---
+title: "lab9_deliverables"
+author: "Theo-60985751, Hannah- , Jingxuan-"
+date: "2023-11-06"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Action 1
+
+### Action 2
+
+### Action 3
