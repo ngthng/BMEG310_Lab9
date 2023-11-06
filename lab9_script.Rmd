@@ -9,8 +9,16 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-### Action 1
+# Action 1
 
-### Action 2
 
-### Action 3
+# Action 2
+
+### Reading the data
+
+```{r}
+data_mutation = read.csv("data_mutation_lab.txt", sep = '\t')
+```
+
+
+# Action 3
