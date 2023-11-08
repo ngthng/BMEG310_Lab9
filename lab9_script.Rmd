@@ -5,10 +5,6 @@ date: "2023-11-06"
 output: pdf_document
 ---
 
-```{r}
-mutation_data <- read.csv("data_mutations.txt", sep = '\t')
-```
-
 # Action 1
 
 
@@ -18,6 +14,7 @@ mutation_data <- read.csv("data_mutations.txt", sep = '\t')
 
 ```{r}
 library(ggplot2)
+library(ggpubr)
 library(pheatmap)
 library(reshape2)
 ```
@@ -40,13 +37,10 @@ unique_patient_clinical = unique(data_clinical$PATIENT_ID)
 unique_patient_rna = unique(colnames(data_rna))
 unique_patient_mutation = unique(data_mutation$Tumor_Sample_Barcode)
 
-shortened_rna = substr(uni_rna, start = 1, stop = 12)
-data_rna_shortened = data_rna
-colnames(data_rna_shortened) = substr(colnames(data_rna_shortened), start = 1, stop = 12)
-colnames(data_rna_shortened) = gsub("\\.", "-", colnames(data_rna_shortened))
+shortened_rna = substr(unique_patient_rna, start = 1, stop = 12)
+shortened_rna = gsub("\\.", "-", shortened_rna)
 
 shortened_mutation = substr(unique_patient_mutation, start = 1, stop = 12)
-data_mutation$Tumor_Sample_Barcode_shortened = substr(data_mutation$Tumor_Sample_Barcode, start = 1, stop = 12)
 
 common_names1 <- intersect(unique_patient_clinical, shortened_mutation)
 common_names2 <- intersect(common_names1, shortened_rna)
@@ -54,115 +48,45 @@ common_names2 <- intersect(common_names1, shortened_rna)
 ### Plotting age distribution of the common patients
 
 ```{r}
-data_clinical_common = data_clinical[data_clinical$PATIENT_ID == common_names2,]
+data_clinical_common = subset(data_clinical, PATIENT_ID %in% common_names2)
 
-
-age = as.data.frame(table(data_clinical$AGE))
-
-# ggplot(data = age)
+boxplot(data_clinical_common$AGE, ylab = "Age", xlab = "Patient", main = "Age distribution of patients who have data
+        for all clinical, mutation, and rna-seq")
 ```
-
-
-### Plotting MAF summary
-```{r}
-hugo <- as.data.frame(table(data_mutation$Hugo_Symbol))
-var.class = as.data.frame(table(data_mutation$Variant_Classification))
-
-ggplot(data=var.class, aes(x=Var1, y=Freq))+
-  geom_col()+
-  theme(axis.text.x = element_text(angle = 45,hjust=1))
-
-var.class2 <- as.data.frame(table(data_mutation$VARIANT_CLASS))
-ggplot(data=var.class2, aes(x=Var1, y=Freq))+
-  geom_col(aes(fill=Var1))
-
-var.type <- as.data.frame(table(data_mutation$Variant_Type))
-ggplot(data=var.type, aes(x=Var1, y=Freq))+
-  geom_col( aes(fill=Var1))
-
-sample.name <- as.data.frame(table(data_mutation$Tumor_Sample_Barcode))
-hugo.ordered = hugo[order(-hugo$Freq),]
-ggplot(data=hugo.ordered[1:15,], aes(x=Var1, y=Freq))+
-  geom_col()+
-  theme(axis.text.x = element_text(angle = 45,hjust=1))+
-  scale_x_discrete(limits = hugo.ordered[1:15,]$Var1)
-
-```
-
-### Generating oncoplot matrix
+### For future use
 
 ```{r}
-cnv_events = unique(data_mutation$Variant_Classification)
-oncomat = reshape2::dcast(
-  data = data_mutation,
-  formula = Hugo_Symbol ~ Tumor_Sample_Barcode,
-  fun.aggregate = function(x, cnv = cnv_events) {
-    x = as.character(x) # >= 2 same/distinct variant classification = Multi_Hit
-    xad = x[x %in% cnv]
-    xvc = x[!x %in% cnv]
-    
-    if (length(xvc) > 0) {
-      xvc = ifelse(test = length(xvc) > 1,
-                   yes = 'Multi_Hit',
-                   no = xvc)
-    }
-    
-    x = ifelse(
-      test = length(xad) > 0,
-      yes = paste(xad, xvc, sep = ';'),
-      no = xvc
-    )
-    x = gsub(pattern = ';$',
-             replacement = '',
-             x = x)
-    x = gsub(pattern = '^;',
-             replacement = '',
-             x = x)
-    return(x)
-  },
-  value.var = 'Variant_Classification',
-  fill = '',
-  drop = FALSE
-)
+data_rna_shortened = data_rna
+colnames(data_rna_shortened) = substr(colnames(data_rna_shortened), start = 1, stop = 12)
+colnames(data_rna_shortened) = gsub("\\.", "-", colnames(data_rna_shortened))
 
-rownames(oncomat) = oncomat$Hugo_Symbol
-oncomat <- oncomat[,-1]
+age = as.data.frame(table(data_clinical_common$AGE))
+age.ordered = age[order(-age$Freq),]
 
-oncomat.ordered <- oncomat[order(-hugo$Freq),]
 ```
-
-### Transforming the matrix into a binary matrix
-
-```{r}
-mat <- oncomat.ordered
-mat[mat!=""]=1
-mat[mat==""]=0
-mat <- apply(mat, 2 ,as.numeric)
-mat <- as.matrix(mat)
-rownames(mat)  <-  row.names(oncomat.ordered)
-```
-
-### Draw the heatmap and cluster the patients
-```{r}
-reduce.mat <- mat[1:3,]
-res <- pheatmap(reduce.mat,
-         cluster_rows = F,
-         show_colnames=FALSE)
-
-cluster <-  as.data.frame(cutree(res$tree_col, k = 2))
-```
-### Survival analysis
-
 
 
 # Action 3
 ```{r}
-non_syn <- subset(mutation_data, Variant_Classification != 'Silent')
-sample.name <- as.data.frame(table(non_syn$Tumor_Sample_Barcode))
-sample.name.ordered <- sample.name[order(sample.name$Freq),]
-ggplot(data = sample.name.ordered, aes(x = Var1, y = Freq))+
-  geom_col()+
-  labs(x = "patients", y = "number of non-synonymous mutations for the case")
+data_mutation$PATIENT_ID = substr(data_mutation$Tumor_Sample_Barcode, start = 1, stop = 12)
+data_mutation_common = subset(data_mutation, PATIENT_ID %in% common_names2)
+non_syn <- subset(data_mutation_common, Variant_Classification != 'Silent')
+
+sample.name <- as.data.frame(table(non_syn$PATIENT_ID))
+sample.name.ordered <- sample.name[order(-sample.name$Freq),]
+
+ggplot(data = sample.name.ordered[1:15,], aes(x = reorder(Var1,-Freq), y = Freq, width = 0.3))+
+  geom_col(position = position_dodge(10))+
+  labs(title = "Top 15 frequency of non-synonymous mutations for the case of all \n patients with data for mutation, clinical, and rna-seq data",x = "patient id", y = "Frequency of non-synonymous mutations for the case")+
+  theme(axis.text.x = element_text(angle = 45,hjust=1, size = 7))
+
+ggplot(data = sample.name.ordered, aes(x = reorder(Var1,-Freq), y = Freq, width = 0.3))+
+  geom_col(position = position_dodge(10))+
+  labs(title = "Frequency of non-synonymous mutations for the case of all \n patients with data for mutation, clinical, and rna-seq data",x = "patient id", y = "Frequency of non-synonymous mutations for the case")+
+  theme(axis.text.x = element_text(angle = 45,hjust=1, size = 5))
+
 ```
+
+
 
 
