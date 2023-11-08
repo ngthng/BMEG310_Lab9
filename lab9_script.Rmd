@@ -1,12 +1,18 @@
 ---
 title: "lab9_deliverables"
-author: "Theo-60985751, Hannah-88788427, Jingxuan-"
+author: "Theo-60985751, Hannah-88788427, Jingxuan-85741635"
 date: "2023-11-06"
 output: pdf_document
 ---
 
 # Action 1
+1. Whole exome sequencing was performed on 363 hepatocellular carcinoma (HCC) cases, identifying 12,136 genes with non-silent mutations.
 
+2. MutSigCV algorithm identified 26 significantly mutated genes (SMGs), including well-known tumor suppressors (TP53, AXIN1) and oncogenes (CTNNB1) previously implicated in HCC.
+
+3. Several genes not previously considered HCC drivers were identified as SMGs, such as LZTR1, EEF1A1, and others.
+
+4. TERT promoter mutations were the most common somatic mutations, found in 44% of HCC cases, and were associated with specific clinical characteristics.
 
 # Action 2
 
