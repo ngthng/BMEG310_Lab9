@@ -1,12 +1,12 @@
 ---
 title: "lab9_deliverables"
-author: "Theo-60985751, Hannah- , Jingxuan-"
+author: "Theo-60985751, Hannah-88788427, Jingxuan-"
 date: "2023-11-06"
 output: pdf_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+mutation_data <- read.csv("data_mutations.txt", sep = '\t')
 ```
 
 # Action 1
@@ -156,3 +156,13 @@ cluster <-  as.data.frame(cutree(res$tree_col, k = 2))
 
 
 # Action 3
+```{r}
+non_syn <- subset(mutation_data, Variant_Classification != 'Silent')
+sample.name <- as.data.frame(table(non_syn$Tumor_Sample_Barcode))
+sample.name.ordered <- sample.name[order(sample.name$Freq),]
+ggplot(data = sample.name.ordered, aes(x = Var1, y = Freq))+
+  geom_col()+
+  labs(x = "patients", y = "number of non-synonymous mutations for the case")
+```
+
+
